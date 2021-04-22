@@ -343,13 +343,17 @@ public:
 		:_year(year)
 		, _month(month)
 		, _day(day)
-	{ }
+	{ 
+		cout << "Date(int, int, int)" << this << endl;
+	}
 
 	Date(const Date& d)
 		:_year(d._year)
 		, _month(d._month)
 		, _day(d._day)
-	{ }
+	{
+		cout << "Date(const Date& d)" << this << endl;
+	}
 
 	Date& operator=(const Date& d)
 	{
@@ -359,10 +363,15 @@ public:
 			_month = d._month;
 			_day = d._month;
 		}
+
+		cout << "operator" << this << endl;
 		return *this;
 	}
 
-	~Date(){ }
+	~Date()
+	{ 
+		cout << "~Date()" << this << endl;
+	}
 
 	
 private:
@@ -386,19 +395,71 @@ Date& TestDate2(Date& d)
 	return d;
 }
 
+Date TestDate3(Date d)
+{
+	return d;
+}
+
 void TestDate()
 {
-	Date d1(2021, 4, 21);
-	Date d2(d1);
+	Date d1(2021, 4, 21); // 调用构造
+	Date d2(d1); // 拷贝构造
 
 	// 测试调用TestDate1和调用TestDate2的打印结果
-	TestDate1(d1);
-	TestDate2(d1);
 
+	//d2 = TestDate1(d1);
+	
+	/*
+	调用经过：
+	拷贝构造 -》 d
+	拷贝构造 -》 temp
+	赋值运算符重载 -》 temp = d
+	拷贝构造 -》 值返回，返回值拷贝一份临时对象ret，只在赋值行有效
+	析构函数 -》 temp
+	析构函数 -》 d
+	赋值运算符重载 -》 d2 = TestDate1(d1)
+	析构函数 -》 ret
+	*/
+
+	//d2 = TestDate2(d1);
+
+	/*
+	调用经过：
+	拷贝构造 -》 temp 
+	赋值运算符重载 -》 temp = d
+	析构函数 -》 temp
+	赋值运算符重载 -》 d2 = TestDate2(d1)
+	*/
+
+	/*
+	TestDate函数结束
+	析构函数 -》 d2
+	析构函数 -》 d1
+	*/
+
+	TestDate3(TestDate3(d1));
+
+	/*
+	拷贝构造 -》 d1的临时对象
+	拷贝构造 -》 ret1的临时拷贝
+	析构 -》 d1的临时对象
+
+	拷贝构造 -》 ret1的临时拷贝的临时对象
+	【拷贝构造 -》 ret2的临时拷贝】没有这条！编译器优化
+	析构 -》 ret1的临时拷贝
+	析构 -》 ret2的临时拷贝
+	*/
+}
+
+void Test()
+{
+	TestDate1(Date d(2021, 4, 21));
 }
 int main()
 {
-	TestDate();
+	//TestDate();
+
+	Test();
 
 	system("pause");
 	return 0;
