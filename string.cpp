@@ -347,23 +347,18 @@ void TestString8()
 {
 	string s1("jiajia");
 	string s2("happy");
-	cout << "s1 = " << s1 << "&s1 = " << &s1 << endl;
-	cout << "s2 = " << s2 << "&s2 = " << &s2 << endl;
 
+	//【？？？】
 	/*
-	C++提供的全局swap：将两个对象中的字符串内容交换
+	C++提供的全局swap：
 	*/
 	swap(s1, s2);
-	cout << "s1 = " << s1 << "&s1 = " << &s1 << endl;
-	cout << "s2 = " << s2 << "&s2 = " << &s2 << endl;
 
 	/* 
-	string类提供的swap：直接交换两个对象的指针的指向
+	string类提供的swap：
 	效率高！
 	*/
 	s1.swap(s2);
-	cout << "s1 = " << s1 << "&s1 = " << &s1 << endl;
-	cout << "s2 = " << s2 << "&s2 = " << &s2 << endl;
 }
 
 // 将字符串对象转化为整型数字
@@ -492,7 +487,7 @@ int main()
 	//TestString5();
 	//TestString6();
 	//TestString7();
-	//TestString8();
+	TestString8();
 	//TestString9();
 	//TestString10();
 	//TestString11();
@@ -501,7 +496,7 @@ int main()
 
 	//func();
 
-	TestString12();
+	//TestString12();
 
 	//TestPushBack();
 
