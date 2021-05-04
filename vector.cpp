@@ -307,6 +307,7 @@ void iteratorErase()
 	else
 		cout << "ERR" << endl;
 }
+#if 0
 int main()
 {
 	//Test1();
@@ -321,6 +322,109 @@ int main()
 	//Test10();
 	//Test11();
 	iteratorErase();
+
+	system("pause");
+	return 0;
+}
+#endif
+
+// 二维数组的创建
+// 1.矩阵方式
+// 创建一个5行4列的vector
+// 理解resize()和reserve()!!!
+void Testvv1()
+{
+	vector<vector<int>> vv1;
+	// 用resize创建出来的二维vector每一个元素都被初始化为0
+	vv1.resize(5); 
+	for (int i = 0; i < vv1.size(); ++i)
+	{
+		vv1[i].resize(4);
+	}
+
+	// 打印二维vector
+	for (int i = 0; i < vv1.size(); i++)
+	{
+		for (int j = 0; j < vv1[i].size(); ++j)
+		{
+			cout << vv1[i][j] << " ";
+		}
+	}
+	cout << endl;
+
+}
+
+void Testvv2()
+{
+	vector<vector<int>> vv2;
+	/*
+	用reserve创建出来的二维vector，只有空间，空间中没有元素
+	vv.start 和 vv.finish 指向空间起始位置 vv.end_of_storage指向空间末尾
+	*/
+	vv2.reserve(5); // 堆上申请5行空间
+	for (int i = 0; i < 5; i++)
+	{
+		vv2.push_back(vector<int>(4,0));
+	}
+	
+	for (int i = 0; i < vv2.size(); i++)
+	{
+		for (int j = 0; j < vv2[i].size(); ++j)
+		{
+			cout << vv2[i][j] << " ";
+		}
+	}
+	cout << endl;
+}
+
+void Testvv3()
+{
+	vector<vector<int>> vv(5, vector<int>{1, 2, 3, 4, 5});
+	vector<vector<int>> vv2(5, vector<int>(4,1));
+}
+
+// 每行中有效元素不同
+// 创建5行杨辉三角
+/*
+1
+1 1
+1 2 1
+1 3 3 1
+1 4 6 4 1
+*/
+void YangHui()
+{
+	vector<vector<int>> vv;
+	vv.resize(5);
+	for (size_t i = 0; i < vv.size(); i++)
+	{
+		vv[i].resize(i + 1, 1);
+	}
+	for (size_t i = 2; i < vv.size(); i++)
+	{
+		for (size_t j = 1; j < vv[i].size() - 1; j++)
+		{
+			vv[i][j] = vv[i - 1][j] + vv[i - 1][j - 1];
+		}
+	}
+
+	for (int i = 0; i < vv.size(); i++)
+	{
+		for (int j = 0; j < vv[i].size(); j++)
+		{
+			cout << vv[i][j] << " ";
+		}
+		cout << endl;
+	}
+	cout << endl;
+
+}
+int main()
+{
+	//Testvv1();
+	//Testvv2();
+	
+	YangHui();
 
 	system("pause");
 	return 0;
