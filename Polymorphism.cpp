@@ -1,65 +1,53 @@
 #include<iostream>
 #include<Windows.h>
+#include<string>
 using namespace std;
 
-/*
-多态的实现条件
-前提：在继承方式下
-基类中必须有虚函数，且派生类要重写基类虚函数
-必须用基类指针或引用，指向不同类的对象，调用虚函数
-*/
+// 包含纯虚函数的类称为抽象类
+// 抽象类不能实例化对象 但是可以定义抽象类类型的指针
+// 抽象类一定要被继承，而且在其后续的子类中要对纯虚函数进行重写
 #if 0
-class Person
+class Car
 {
 public:
-	virtual void BuyTicket()
-	{
-		cout << "全价票" << endl;
-	}
-protected:
-	string _name;
-	string _gender;
-	int _age;
+	// 纯虚函数：在函数前加上virtual关键字，后边加上=0
+	virtual void Drive() = 0;
 };
 
-class Student :public Person
+class Benz :public Car
 {
 public:
-	virtual void BuyTicket()
+	virtual void Drive()
 	{
-		cout << "半价票" << endl;
+		cout << "Benz-舒适" << endl;
 	}
-protected:
-	int _stuID;
 };
 
-class Solider :public Person
+class BMW :public Car
 {
 public:
-	virtual void BuyTicket()
+	virtual void Drive()
 	{
-		cout << "免费" << endl;
+		cout << "BMW-操纵" << endl;
 	}
-protected:
-	string _ID;
 };
 
-// 注意：在程序运行时，根据p所引用对象的不同，最终调用的虚函数不同
-// 在程序编译时，无法确定具体要调用哪个虚函数---因为编译阶段，编译器不知道p引用哪个对象
-void Test(Person& p)
+void TestCar()
 {
-	p.BuyTicket();
+	//Car c; // 抽象类不能实例化对象
+	Car *pc; // 可以定义抽象类类型的指针
+
+	Car *pBenz = new Benz;
+	pBenz->Drive();
+	delete pBenz;
+
+	Car *pBMW = new BMW;
+	pBMW->Drive();
+	delete pBMW;
 }
-
 int main()
 {
-	Person p;
-	Student stu;
-	Solider sol;
-
-	Test(p);
-	Test(stu);
-	Test(sol);
+	TestCar();
 
 	system("pause");
 	return 0;
@@ -67,319 +55,614 @@ int main()
 #endif
 
 /*
-重写
-前提：一定是在继承体系中，派生类对基类中的虚函数进行重写
-1. 基类的函数必须是虚函数
-2. 子类要重写基类虚函数：派生类虚函数的原型必须要和基类虚函数原型一致
-   原型一致：返回值类型 函数名字(参数列表) 必须完全相同
-   例外：
-       1）协变：基类虚函数返回基类指针或引用
-	            派生类函数返回派生类指针或引用
-	   2）
-3. 子类虚函数可以不加virtual关键字，但是建议加上
-4. 子类和基类虚函数的访问权限可以不同
+含有虚函数的类，如果没有显式定义构造函数，编译器会生成默认的构造函数
 */
+// 多态的原理
 #if 0
-class B
-{
-public:
-	void Test1()
-	{
-		cout << "B::Test1()" << endl;
-	}
-
-	virtual void Test2()
-	{
-		cout << "B::Test2()" << endl;
-	}
-
-	void Test3()
-	{
-		cout << "B::Test3()" << endl;
-	}
-
-	virtual void Test4()
-	{
-		cout << "B::Test4()" << endl;
-	}
-
-	virtual void Test5()
-	{
-		cout << "B::Test5()" << endl;
-	}
-
-	virtual void Test6(int)
-	{
-		cout << "B::Test5()" << endl;
-	}
-
-	virtual void Test7()
-	{
-		cout << "B::Test7()" << endl;
-	}
-
-	virtual void Test8()
-	{
-		cout << "B::Test8()" << endl;
-	}
-
-	void Test9()
-	{
-		cout << "B::Test9()" << endl;
-	}
-
-	virtual void Test10(int a = 10)
-	{
-		cout << "B::Test10()" << endl;
-	}
-protected:
-	int _b;
-};
-
-class D :public B
-{
-public:
-	// 与基类中Test1为同名隐藏
-	void Test1()
-	{
-		cout << "D::Test1()" << endl;
-	}
-
-	// 重写了基类中的Test2
-	// 子类虚函数可以不加virtual关键字，但是建议加上
-	void Test2()
-	{
-		cout << "D::Test2()" << endl;
-	}
-
-	// 与基类中Test3为同名隐藏
-	virtual void Test3()
-	{
-		cout << "D::Test3()" << endl;
-	}
-
-	// 与基类中Test4构成重写
-	// 重写的标准写法！！
-	virtual void Test4()
-	{
-		cout << "D::Test4()" << endl;
-	}
-
-	// 基类中Test5没有参数，派生类的Test5有参数---函数原型不一致---不是重写
-	// 与基类中Test5为同名隐藏
-	virtual void Test5(int d)
-	{
-		cout << "D::Test5()" << endl;
-	}
-
-	// 函数名不同
-	virtual void Tset6(int)
-	{
-		cout << "D::Test6()" << endl;
-	}
-
-	// Test8啥也不是
-	// 返回值类型不同 --- 代码编译失败
-	/*virtual int Test8()
-	{
-		cout << "D::Test8()" << endl;
-		return 0;
-	}*/
-
-	// 同名隐藏 函数名相同
-	virtual int Test9()
-	{
-		cout << "D::Test9()" << endl;
-		return 0;
-	}
-
-	// 同名隐藏
-	virtual void Test10()
-	{
-		cout << "B::Test10()" << endl;
-	}
-private:
-	// 子类Test7的权限是私有的，但是在类外可以调用
-	// 与基类中Test7构成重写
-	virtual void Test7()
-	{
-		cout << "D::Test7()" << endl;
-	}
-protected:
-	int _d;
-};
-
-void TestVirtual(B* pb)
-{
-	/*
-	Test1是同名隐藏
-	pb指向基类对象或者派生类对象，都调用基类的Test1
-	基类指针调用，调用基类成员函数
-	*/
-	pb->Test1();
-
-	/*
-	基类和派生类中Test2构成重写
-	pb指向基类对象，调用基类Test2
-	pb指向派生类对象，调用派生类Test2
-	*/
-	pb->Test2();
-
-	/*
-	基类Test3不是虚函数，但是派生类中Test3为虚函数
-	也是同名隐藏
-	pb指向基类对象或者派生类对象，都调用基类的Test3
-	基类指针调用，调用基类成员函数
-	*/
-	pb->Test3();
-
-	pb->Test4();
-
-	pb->Test5();
-
-	pb->Test6(1);
-
-	pb->Test7();
-
-	pb->Test9();
-
-	pb->Test10();
-}
-
-int main()
-{
-	B b;
-	TestVirtual(&b);
-
-	cout << "---------------------" << endl;
-
-	D d;
-	TestVirtual(&d);
-
-	system("pause");
-	return 0;
-}
-#endif
-
-// 重写例外---协变
-/*
-基类虚函数返回基类指针或引用
-派生类函数返回派生类指针或引用
-
-只要基类虚函数 的基类 和 派生类虚函数 的派生类 是继承关系 
-返回的基类指针或引用 的基类 和 返回的基类指针或引用 的派生类 是继承关系即可
-*/
-#if 0
-class A{};
-class B:public A{};
-
 class Base
 {
 public:
-	virtual Base& Test1()
+	void Test()
 	{
-		cout << "Base::Test1()" << endl;
-		return *this;
+		cout << "Test()" << endl;
 	}
 
-	virtual A* Test2()
+	virtual void Fun1()
 	{
-		cout << "A::Test2()" << endl;
-		return nullptr;
+		cout << "Base::Fun1()" << endl;
 	}
+
+	virtual void Fun2()
+	{
+		cout << "Base::Fun2()" << endl;
+	}
+
+	int _b;
+};
+
+/*
+基类和派生类各自拥有一个虚表
+派生类会继承基类的虚表，但只是将基类虚表中的内容拷贝一份
+*/
+class Derived:public Base
+{
+public:
+	int _d;
+};
+
+int main()
+{
+	/*
+	含有虚函数的类的大小会多4个字节(在32位vs平台下)
+	不管有多少虚函数，都只多4个字节，说明这四个字节的指针_vfptr是指向一块空间
+	这块空间就是虚表的空间
+	虚表中存放的是虚函数的地址
+	虚函数的存放程序由虚函数的声明的先后次序决定
+	*/
+	cout << sizeof(Base) << endl;
+
+	/*
+	在内存窗口&b，在创建完对象后，前四个字节被填充
+	说明虚表指针_vfptr是在构造函数中被填充的，因为创建对象时，只调用了构造函数
+	*/
+	Base b;
+
+	Derived d;
+
+	system("pause");
+	return 0;
+}
+#endif
+
+// 派生类中不重写基类虚函数，虚表中存放的是基类虚函数
+// 派生类重写了基类虚函数，虚表中存放的是派生类重写的虚函数
+#if 0
+class Base
+{
+public:
+	void Test()
+	{
+		cout << "Test()" << endl;
+	}
+
+	virtual void Fun1()
+	{
+		cout << "Base::Fun1()" << endl;
+	}
+
+	virtual void Fun2()
+	{
+		cout << "Base::Fun2()" << endl;
+	}
+
+	virtual void Fun3()
+	{
+		cout << "Base::Fun3()" << endl;
+	}
+
+	int _b;
+};
+
+/*
+此时派生类虚函数表中存放的是
+Derived::Fun1()
+Base::Fun2()
+Derived::Fun3()
+*/
+class Derived :public Base
+{
+public:
+	virtual void Fun1() // 重写基类虚函数Fun1
+	{
+		cout << "Derived::Fun1()" << endl;
+	}
+
+	virtual void Fun3() // 重写基类虚函数Fun3
+	{
+		cout << "Derived::Fun1()" << endl;
+	}
+	int _d;
+};
+
+int main()
+{
+	Base b;
+	Derived d;
+
+	system("pause");
+	return 0;
+}
+#endif
+
+// 派生类中自己的虚函数放在哪？
+/*
+从监视窗口看不到派生类新增的虚函数
+从内存窗口可以看到
+*/
+#if 0
+class Base
+{
+public:
+	void Test()
+	{
+		cout << "Test()" << endl;
+	}
+
+	virtual void Fun1()
+	{
+		cout << "Base::Fun1()" << endl;
+	}
+
+	virtual void Fun2()
+	{
+		cout << "Base::Fun2()" << endl;
+	}
+
+	virtual void Fun3()
+	{
+		cout << "Base::Fun3()" << endl;
+	}
+
+	int _b;
 };
 
 class Derived :public Base
 {
 public:
-	virtual Derived& Test1()
+	virtual void Fun1() // 重写基类虚函数Fun1
 	{
-		cout << "Derived::Test()" << endl;
-		return *this;
+		cout << "Derived::Fun1()" << endl;
 	}
 
-	virtual B* Test2()
+	/*
+	派生类虚表中的虚函数次序与派生类重写基类虚函数的顺序无关
+	派生类新增的虚函数，按其声明次序，加在虚表后面
+	*/
+	virtual void Fun3() // 重写基类虚函数Fun3
 	{
-		cout << "B::Test2()" << endl;
-		return nullptr;
+		cout << "Derived::Fun3()" << endl;
 	}
 
+	virtual void Fun2() // 重写基类虚函数Fun2
+	{
+		cout << "Derived::Fun2()" << endl;
+	}
+
+	
+
+	virtual void Fun4() // 派生类自己的虚函数
+	{
+		cout << "Derived::Fun4()" << endl;
+	}
+
+	virtual void Fun5() // 派生类自己的虚函数
+	{
+		cout << "Derived::Fun5()" << endl;
+	}
+
+	int _d;
 };
 
-void TestVir(Base& b)
+// 如何获取虚表地址？ 如何获取虚表中的每一项？
+/*
+1. 对象地址和虚表地址在数值上是相同的，可以通过&对象先拿到对象地址
+2. &对象的类型是类类型* 要拿到前四个字节需要强转为int* 
+   即 *(int*)(&对象名) 就是虚表地址的整型数字
+3. 要将整型数字转化为指针类型 
+   虚函数的类型为 void (*)(void)
+   typedef void (*PVFT)(void) 将虚函数类型取一个类型名为PVFT
+   再将整型数字转化为PVFT类型即可获取到虚函数地址
+*/
+typedef void(*PVFT)();
+/*
+区分带不带typedef时的PVFT
+typedef void(*PVFT)(); 表示给void(*)()这个函数指针类型起了一个别名 叫PVFT
+void(*PVFT)(); 表示定义了一个void(*)()这个函数指针类型的变量 变量名叫PVFT
+*/
+void GetVFT(Base& b, const string& str)
 {
-	b.Test1();
-	b.Test2();
+	//cout << hex << *(int*)(&b) << endl; // 这是一个整型数字，与虚表地址的数值相同而已，并不是虚表地址
+
+	PVFT* pvf = (PVFT*)(*(int*)(&b)); // 将其强转为PVFT* 才是一个地址
+	//cout << hex << pvf << endl; // 验证强转之后的数值与整型数值是否相同 相同则说明拿到了虚表地址
+	// 至此，获取到虚表地址了
+	//*pvf = nullptr; // 运行时，代码崩溃 虚表中内容放在代码段，是只读的，不允许修改
+
+	cout << str << endl;
+	// pvf指向虚表的起始位置，pvf解引用之后拿到的就是虚函数表第一个虚函数的地址，后面加上()
+	// 相当于调用虚表中第一个虚函数
+	//(*pvf)();
+
+	// 调用虚表中所有虚函数
+	while (*pvf)
+	{
+		(*pvf)();
+		pvf++;
+	}
 }
 
 int main()
 {
-	Base b;
-	TestVir(b);
+	/*
+	同一个类的不同对象共享同一个虚表
+	*/
+	Base b, b1;
+	Derived d, d1;
 
-	cout << "---------------------" << endl;
+	// 虚函数的类型
+	cout << typeid(&Derived::Fun4).name() << endl;
 
-	Derived d;
-	TestVir(d);
+	GetVFT(b, "Base VFT:");
+	GetVFT(d, "Derived VFT:");
 
 	system("pause");
 	return 0;
 }
 #endif
 
-// 重写例外2---析构函数的重写
-// 基类析构函数是虚函数，只要子类定义了析构函数，就构成重写
-// 建议在继承体系中将基类析构函数给成虚函数
-class A
+/*
+虚函数调用原理:
+1. 获取对象地址，然后从对象前四个字节拿到虚表地址
+2. 传递参数&this指针
+3. 从虚表中获取对应虚函数地址
+4. 调用该虚函数
+*/
+#if 0
+class Base
 {
 public:
-	virtual ~A()
+	void Test()
 	{
-		cout << "~A()" << endl;
+		cout << "Test()" << endl;
 	}
-private:
-	int _a;
+
+	virtual void Fun1()
+	{
+		cout << "Base::Fun1()" << endl;
+	}
+
+	virtual void Fun2()
+	{
+		cout << "Base::Fun2()" << endl;
+	}
+
+	virtual void Fun3()
+	{
+		cout << "Base::Fun3()" << endl;
+	}
+
+	int _b;
 };
 
-class B:public A
+class Derived :public Base
 {
 public:
-	/*
-	派生类中涉及到资源管理，基类析构函数一定要是虚函数
-	否则，销毁派生类对象时，只调用基类析构函数
-	*/
-	B()
+	virtual void Fun1() // 重写基类虚函数Fun1
 	{
-		pb = new int[10];
+		cout << "Derived::Fun1()" << endl;
 	}
 
-	virtual ~B()
+	virtual void Fun2() // 重写基类虚函数Fun2
 	{
-		if (pb)
-			delete[] pb;
-
-		cout << "~B()" << endl;
+		cout << "Derived::Fun2()" << endl;
 	}
-private:
-	int* pb;
+
+	virtual void Fun3() // 重写基类虚函数Fun3
+	{
+		cout << "Derived::Fun3()" << endl;
+	}
+
+	virtual void Fun4() // 派生类自己的虚函数
+	{
+		cout << "Derived::Fun4()" << endl;
+	}
+
+	virtual void Fun5() // 派生类自己的虚函数
+	{
+		cout << "Derived::Fun5()" << endl;
+	}
+
+	int _d;
 };
+
+/*
+如果是基类指针，指针能访问的空间大小只有基类那么大
+所以，即使基类指针指向子类对象，也调不到派生类独有的
+*/
+void TestVirtual(Base* b)
+{
+	b->Test();
+	b->Fun1();
+	b->Fun2();
+	b->Fun3();
+}
 
 int main()
 {
-	A* pa = new B;
+	Base b, b1;
+	Derived d, d1;
 
-	/*
-	delete会做两件事
-	1. 调用析构函数
-	因为pa是基类A类型的指针，所以编译器会调用基类A的析构函数
-	如果基类A的析构函数不是虚函数
-	调用完基类A的析构函数后，
-	调用operator delete只释放了pa指向的空间，即pb的空间
-	而派生类B中申请的10个int类型的空间并没有释放，所以会造成内存泄漏
-	2. 调用operator delete
-	*/
-	delete pa;
+	d._b = 1;
+	d._d = 2;
+
+	TestVirtual(&b);
+	cout << "---------------------------" << endl;
+	TestVirtual(&d);
+
+	b = (Base)d; // 可能会生成临时对象
+	// (Base*)&d 告诉编译器，将该派生类对象d按照基类对象的布局方式进行解析
+	// 不会生成临时对象
+	Base* pb = (Base*)&d; 
+	pb->Fun1(); // 调用派生类虚函数
+
 
 	system("pause");
 	return 0;
 }
+#endif
+
+// 基类含有虚函数的多继承下的对象模型
+// 派生类继承几个基类，就有几个虚表，派生类新增的虚函数会添加在第一个继承的类的虚表中
+// 调用不同的基类中的虚函数，要用不同的基类指针或引用去调用
+/*
+B1的对象模型:
+                  B1的虚表
+B1的虚表指针----->B1::fun1()
+_b1               B1::fun2()
+*/
+#if 0
+class B1
+{
+public:
+	virtual void fun1()
+	{
+		cout << "B1::fun1()" << endl;
+	}
+
+	virtual void fun2()
+	{
+		cout << "B1::fun2()" << endl;
+	}
+
+	int _b1;
+};
+
+/*
+B2的对象模型:
+                  B2的虚表
+B2的虚表指针----->B2::fun3()
+                  B2::fun4()
+	_b2
+*/
+class B2
+{
+public:
+	virtual void fun3()
+	{
+		cout << "B2::fun3()" << endl;
+	}
+
+	virtual void fun4()
+	{
+		cout << "B2::fun4()" << endl;
+	}
+
+	int _b2;
+};
+
+/*
+D的对象模型:
+                             D的虚表
+从B1继承下来的虚表指针----->B1::fun1()
+                            D::fun2()
+							D::fun5()
+		_b1
+从B2继承下来的虚表指针----->B2::fun3()
+                            D::fun4()
+        _b2
+		_d
+*/
+class D :public B1, public B2
+{
+public:
+	virtual void fun2()
+	{
+		cout << "D::fun3()" << endl;
+	}
+
+	virtual void fun4()
+	{
+		cout << "D::fun4()" << endl;
+	}
+
+	virtual void fun5()
+	{
+		cout << "D::fun5()" << endl;
+	}
+
+	int _d;
+};
+
+typedef void(*PVFT)();
+// 基类B1中的虚函数要用基类B1类型的指针调用
+void TestVirtual1(B1& b, const string& str)
+{
+	cout << str << endl;
+
+	PVFT* pvf = (PVFT*)(*(int*)&b);
+	while (*pvf)
+	{
+		(*pvf)();
+		pvf++;
+	}
+}
+
+// 基类B2中的虚函数要用基类B2类型的指针调用
+void TestVirtual2(B2& b, const string& str)
+{
+	cout << str << endl;
+	
+	PVFT* pvf = (PVFT*)(*(int*)&b);
+	while (*pvf)
+	{
+		(*pvf)();
+		pvf++;
+	}
+}
+
+int main()
+{
+	D d;
+	d._b1 = 1;
+	d._b2 = 2;
+	d._d = 3;
+
+	TestVirtual1(d, "B1的VFT：");
+	cout << "----------------------" << endl;
+	TestVirtual2(d, "B2的VFT：");
+
+
+	system("pause");
+	return 0;
+}
+#endif
+
+// 题
+#if 0
+class A{
+public:
+	A(char *s) 
+	{ 
+		cout << s << endl; 
+	}
+	~A(){}
+};
+class B :virtual public A 
+{
+public:
+	B(char *s1, char*s2) 
+		:A(s1) 
+	{ 
+		cout << s2 << endl; 
+	}
+};
+class C :virtual public A 
+{
+public:
+	C(char *s1, char*s2) 
+		:A(s1) 
+	{ 
+		cout << s2 << endl;
+	}
+};
+class D :public B, public C {
+public:
+	D(char *s1, char *s2, char *s3, char *s4)
+		:B(s1, s2)
+		, C(s1, s3)
+		, A(s1)
+	{
+		cout << s4 << endl;
+	}
+};
+
+int main() {
+	/*
+	最终打印结果为class A class B class C class D
+	构造函数调用次序：
+	要先调用基类构造函数完成对基类中成员的初始化
+	D先继承B，而B继承自A，所以先调用A的构造函数，再调用B的构造函数
+	然后D继承C，再调用C的构造函数
+	最后调用D自己的构造函数
+	*/
+	D *p = new D("class A", "class B", "class C", "class D");
+	delete p;
+
+	system("pause");
+	return 0;
+}
+#endif
+
+// 题2
+#if 0
+class Base1 
+{ 
+public: 
+	int _b1; 
+};
+class Base2 
+{ 
+public: 
+	int _b2;
+};
+class Derive : public Base1, public Base2 
+{ 
+public: 
+	int _d; 
+};
+/*
+派生类对象d的对象模型
+Base1
+Base2
+_d
+*/
+int main(){
+	Derive d;
+	Base1* p1 = &d; // p1指向对象d模型中基类Base1的位置，只能访问Base1类型大小的空间，即只能访问Base1类中成员
+	Base2* p2 = &d; // p2指向对象d模型中基类Base2的位置，只能访问Base2类型大小的空间，即只能访问Base2类中成员
+	Derive* p3 = &d; // 指向对象d的起始位置
+	// 所以p1 = p3 != p2
+
+	return 0;
+}
+#endif
+
+// 题3
+#if 0
+class A {
+public:
+	virtual void func(int val = 1)
+	{ 
+		std::cout << "A->" << val << std::endl;
+	}
+
+	virtual void test()
+	{ 
+		/*
+		虚函数fun的调用过程
+		1. 从对象前四个字节中取虚表地址
+		2. 传参：
+		       val传递1 是在编译期间用了A类中的默认值，但是最终调用是根据调用对象来决定调用哪个类的虚函数
+			   传递this
+		3. 从虚表中取虚函数地址
+		4. 进行调用
+		*/
+		func(); 
+	}
+};
+class B : public A {
+public:
+	void func(int val = 0)
+	{ 
+		std::cout << "B->" << val << std::endl; 
+	}
+};
+
+int main(int argc, char* argv[])
+{
+	B*p = new B;
+	p->test(); // 打印结果为B->1
+
+	system("pause");
+	return 0;
+}
+#endif
+
+/*
+静态多态：在编译时就决定函数行为，即调用哪个函数
+两种典型的静态多态：
+1. 函数重载
+2. 模板
+*/
+
+
