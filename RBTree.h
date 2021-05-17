@@ -24,9 +24,146 @@ struct RBTreeNode
 };
 
 template<class T>
+struct RBTreeIterator
+{
+	typedef RBTreeNode<T> Node;
+	typedef RBTreeIterator<T> Self;
+public:
+	// 构造
+	RBTreeIterator(Node* n = nullptr)
+		:node(n)
+	{}
+
+	// 迭代器要有指针类似的方法
+	T& operator*()
+	{
+		return node->data;
+	}
+
+	T* operator->()
+	{
+		return &(operator*());
+	}
+
+	// 迭代器要能够移动
+	Self& operator++() // 前置++
+	{
+		Increment();
+		return *this;
+	}
+
+	Self operator++(int) // 后置++
+	{
+		Self temp(*this);
+		Increment();
+		return temp;
+	}
+
+	Self& operator--() // 前置--
+	{
+		Decrement();
+		return *this;
+	}
+
+	Self operator--(int) // 后置--
+	{
+		Self temp(*this);
+		Decrement();
+		return temp;
+	}
+
+	void Increment()
+	{
+		// 一定要先在其右子树中找，右子树不存在说明node是该条路径中最大的，
+		// 再去找该路径根节点，根节点即为node的节点
+		if (node->right)
+		{
+			node = node->right;
+			while (node->left)
+			{
+				node = node->left;
+			}
+		}
+		else
+		{
+			Node* parent = node->parent;
+			while (node == parent->right)
+			{
+				node = parent;
+				parent = node->parent;
+			}
+			
+			if (node->right != parent)
+				node = parent;
+		}
+
+		// 特殊情况：node为红黑树的根节点
+		/*
+		经过上面的else
+		node == head，parent == root
+		但是node的下一个节点应该是end()所在位置，即head的位置
+		所以要对node的特殊情况进行判断，再赋值node=parent
+		*/
+		
+	}
+
+	void Decrement()
+	{
+		// 特殊情况：node在end()的位置
+		// node == node->parent->parent这一个条件不能保证node在end()的位置，还有可能是红黑树的根节点
+		// head->color是红色，当node->color是红色时，node才一定在end()的位置
+		if (RED == node->color && node == node->parent->parent)
+		{
+			node = node->right;
+		}
+		// 找左子树中最大的
+		else if (node->left)
+		{
+			node = node->left;
+			while (node->right)
+			{
+				node = node->right;
+			}
+		}
+		else
+		{
+			// 左子树不存在，要在node的双亲中找比node小的结点
+			Node* parent = node->parent;
+			while (node == parent->left)
+			{
+				// node是parent的左孩子说明，node还是比parent小
+				// 需要继续向上找，直到node大于parent
+				node = parent;
+				parent = node->parent;
+			}
+			node = parent;
+		}
+
+		// node是红黑树的根节点时，node就是红黑树中最小的结点
+		// --操作是非法的，所以直接让node在parent的位置(红黑树根节点)即可
+	}
+
+	// 迭代器要能够比较
+	bool operator!=(const Self& s)const
+	{
+		return node != s.node;
+	}
+
+	bool operator==(const Self& s)const
+	{
+		return node == s.node;
+	}
+
+private:
+	Node* node;
+};
+
+template<class T>
 class RBTree
 {
 	typedef RBTreeNode<T> Node;
+public:
+	typedef RBTreeIterator<T> iterator;
 public:
 	RBTree()
 	{
@@ -42,6 +179,17 @@ public:
 		delete head;
 		head = nullptr;
 	}
+
+	iterator begin()
+	{
+		return iterator(head->left);
+	}
+
+	iterator end()
+	{
+		return iterator(head);
+	}
+
 
 	bool Insert(const T& x)
 	{
@@ -290,7 +438,7 @@ private:
 			return head;
 
 		Node* cur = root;
-		while (cur)
+		while (cur->left)
 			cur = cur->left;
 
 		return cur;
@@ -303,7 +451,7 @@ private:
 			return head;
 
 		Node* cur = root;
-		while (cur)
+		while (cur->right)
 			cur = cur->right;
 
 		return cur;
@@ -340,12 +488,30 @@ void TestRBTree()
 	for (auto e : array)
 		t.Insert(e);
 
+
 	// 验证红黑树正确性
 	// 1.是否为二叉搜索树
 	t.InOrder();
+
+	// 验证封装的迭代器
+	cout << "=========================" << endl;
+	cout << "采用迭代器来遍历红黑树：" << endl;
+	auto it = t.begin();
+	while (it != t.end())
+	{
+		cout << *it << " ";
+		++it;
+	}
+	cout << endl;
+
+	for (auto e : t)
+		cout << e << " ";
+	cout << endl;
+
 	// 2.验证红黑树性质
 	if (t.IsVaildRBTree())
 		cout << "是红黑树" << endl;
 	else
 		cout << "不是红黑树" << endl;
+
 }
