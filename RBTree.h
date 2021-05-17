@@ -152,7 +152,68 @@ public:
 		InOrder(GetRoot());
 		cout << endl;
 	}
+
+	bool IsVaildRBTree()
+	{
+		// 空树是红黑树
+		Node* root = GetRoot();
+		if (nullptr == root)
+			return true;
+
+		// 树非空：检测红黑树性质
+		// 1. 检测性质2：根节点是黑色
+		if (root->color != BLACK)
+			return false;
+
+		// 2. 检测性质3：不能有连在一起的红色节点
+		// 3. 检测性质4：每条路径的黑色节点个数相同
+		// 统计每条路径黑色节点个数时要遍历所有节点，可以顺便检测性质3
+		Node* cur = root;
+		size_t blackCount = 0;
+		while (cur)
+		{
+			if (BLACK == cur->color)
+				blackCount++;
+
+			cur = cur->left;
+		}
+
+		size_t pathBlackCount = 0;
+		return _IsValidRBTree(root, pathBlackCount, blackCount);
+	}
+
 private:
+	// 注意：pathBlackCount传参时不能传size_t& ，否则pathBlackCount会被带出递归调用，最终pathBlackCount就是红黑树中所有黑色节点个数
+	// 传递size_t，每次调用_IsValidRBTree函数都会有一个pathBlackCount的临时变量
+	// 递归调用返回时，pathBlackCount就是当前节点调用函数时的pathBlackCount的值 
+	bool _IsValidRBTree(Node* root, size_t pathBlackCount, const size_t blackCount)
+	{
+		if (nullptr == root)
+			return true;
+
+		if (BLACK == root->color)
+			pathBlackCount++;
+
+		Node* parent = root->parent;
+		if (parent != head && RED == parent->color && RED == root->color)
+		{
+			cout << "违反性质3：存在连在一起的红色节点" << endl;
+			return false;
+		}
+
+		if (nullptr == root->left && nullptr == root->right)
+		{
+			if (pathBlackCount != blackCount)
+			{
+				cout << "违反性质4：路径中黑色节点的个数不同" << endl;
+				return false;
+			}
+		}
+
+		return _IsValidRBTree(root->left, pathBlackCount, blackCount) && 
+			   _IsValidRBTree(root->right, pathBlackCount, blackCount);
+	}
+
 	void RotateLeft(Node* parent)
 	{
 		Node* subR = parent->right;
@@ -283,4 +344,8 @@ void TestRBTree()
 	// 1.是否为二叉搜索树
 	t.InOrder();
 	// 2.验证红黑树性质
+	if (t.IsVaildRBTree())
+		cout << "是红黑树" << endl;
+	else
+		cout << "不是红黑树" << endl;
 }
